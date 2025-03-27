@@ -1,0 +1,14 @@
+train: ./dataset/train # Root directory of the train dataset
+val: ./dataset/valid # Root directory of the validation dataset
+test: ./dataset/test # Root directory of the test dataset
+
+nc: 1 # Number of classes
+names: ['0'] # 0 = License Plate
+
+# Custom dataset from Roboflow
+roboflow:
+  workspace: sch-pp85c
+  project: plate-641xp
+  version: 2
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/sch-pp85c/plate-641xp/dataset/2

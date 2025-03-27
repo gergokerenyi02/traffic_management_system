@@ -1,0 +1,31 @@
+OLD_V/
+Dokumentáció/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+venv/
+.env
+
+# Java Spring Boot
+*.class
+*.jar
+*.war
+*.log
+target/
+.mvn/
+.idea/
+*.iml
+*.iws
+out/
+
+!mvnw
+!mvnw.cmd
+
+#MACOS
+.DS_Store
+Thumbs.db
+

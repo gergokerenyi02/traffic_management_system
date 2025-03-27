@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>License Plate Detection Application</title>
+    <link rel="stylesheet" href="/styles.css">
+
+    <script>
+
+        async function validateSession()
+        {
+            const response = await fetch('/session/validate');
+            const result = await response.json();
+
+            if(result.status === "success")
+            {
+                return;
+            }
+
+            if(!result.ok || result.status === "error")
+            {
+                window.location.href = "/login";
+            }
+        }
+
+        async function logout() {
+            await fetch('/session/logout');
+            window.location.href = "/login";
+        }
+
+
+        async function listDetections() {
+            const num = document.getElementById("numOfDetections").value;
+
+            const response = await fetch(`/detections/list?numOfDetections=${num}`);
+            const detections = await response.json();
+
+            if(response.ok)
+            {
+                const resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = "";
+                detections.forEach(detection => {
+                    const link = document.createElement("a");
+                    link.onclick = function() {
+                        //displayJobDetails(job.url);
+                    };
+                    link.textContent = `${detection.detectionDate} - ${detection.licensePlate}`;
+
+
+                    // Creating delete/remove button for each job.
+                    const deleteButton = document.createElement("span");
+                    deleteButton.classList.add("close");
+                    deleteButton.classList.add("deleteButton");
+                    deleteButton.innerHTML = "×";
+                    deleteButton.onclick = function(){
+                        //deleteJob(job.id);
+                    }
+
+                    // Creating modify button for each job.
+                    const modifyButton = document.createElement("span");
+                    modifyButton.classList.add("close");
+                    modifyButton.classList.add("deleteButton");
+                    modifyButton.innerHTML = "✎";
+                    modifyButton.onclick = function(){
+                        //    renderModifyForm(job.id);
+                        //    toggleModal();
+                    }
+
+                    const jobWrapper = document.createElement("div");
+                    jobWrapper.classList.add("job-wrapper");
+
+                    const actionsWrapper = document.createElement("div");
+                    actionsWrapper.classList.add("actions-wrapper");
+                    //actionsWrapper.appendChild(deleteButton);
+                    //actionsWrapper.appendChild(modifyButton);
+
+                    jobWrapper.appendChild(actionsWrapper);
+
+                    jobWrapper.appendChild(link);
+
+                    resultsDiv.appendChild(jobWrapper);
+                    resultsDiv.appendChild(document.createElement("br"));
+                });
+            } else
+            {
+                const msgDiv = document.getElementById("message");
+                msgDiv.textContent = "Error: " + detections.message;
+                msgDiv.classList.add("error-msg");
+                msgDiv.classList.remove("success-msg");
+            }
+
+        }
+
+    </script>
+</head>
+<body onload="validateSession(); listDetections();">
+<div class="navbar">
+    <div class="items">
+        <a href="/">Home</a>
+        <a href="/detections">Detections</a>
+        <a onclick="logout()">Logout</a>
+    </div>
+</div>
+
+
+<h1 th:text="${welcome_message}"></h1>
+<p th:if="${sessionEmail != null and sessionName != null}" th:text="'You are logged in as ' + ${sessionEmail} + ' (' + ${sessionName} + ')'"></p>
+
+<div class="menu">
+
+
+    <section id="detection-section">
+        <h2>List detections</h2>
+        <label for="numOfDetections">Detection to list:</label>
+        <input type="number" min="1" value="20" id="numOfDetections" name="numOfDetections">
+        <button onclick="listDetections()">List</button>
+        <div id="results"></div>
+    </section>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+{"license_plates": [[]], "license_plate_text": [[]], "cars": [], "car_model_predictions": {"image": {"width": 640, "height": 640}, "predictions": [{"width": 626.0, "height": 633.0, "x": 326.0, "y": 318.5, "confidence": 0.44642049074172974, "class_id": 12, "class": "parking meter", "detection_id": "af223f93-25f4-4178-bafb-eb19da165c95", "parent_id": "image"}]}}

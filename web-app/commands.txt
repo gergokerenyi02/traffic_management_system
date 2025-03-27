@@ -1,0 +1,13 @@
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export JAVA_HOME=$(/usr/libexec/java_home -v 19)
+
+
+CREATED DATABASE AS FOLLOWS:
+
+
+
+ACCESS  THE DATABASE:
+mysql -u admin -p
+USE license_plate_db;
+SHOW TABLES;
+SELECT * FROM license_plate;

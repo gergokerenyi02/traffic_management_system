@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>License Plate Detection Application</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script>
+
+        async function validateSession()
+        {
+            const response = await fetch('/session/validate');
+            const result = await response.json();
+
+            if(result.status === "success")
+            {
+                window.location.href = "/";
+                return;
+            }
+
+            if(!result.ok || result.status === "error")
+            {
+                let current_path = window.location;
+                if(current_path === '/')
+                {
+                    window.location.href = "/login";
+                }
+
+            }
+        }
+
+        async function registerClient(event) {
+            event.preventDefault();
+
+            const username = document.getElementById("registerUsername").value;
+            const password = document.getElementById("registerPassword").value;
+
+            const response = await fetch('/session/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({username, password})
+            });
+
+            //const result = await response.text();
+            const result = await response.json();
+            const msgDiv = document.getElementById("message");
+            if (response.ok) {
+                msgDiv.textContent = result.message;
+                msgDiv.classList.add("success-msg");
+                msgDiv.classList.remove("error-msg");
+
+                const validateResponse = await fetch('/session/validate');
+                const validateResult = await validateResponse.json();
+
+                if (validateResult.status === "success") {
+                    window.location.href = "/";
+                }
+            } else {
+                msgDiv.textContent = "Registration failed: " + result.message;
+                msgDiv.classList.add("error-msg");
+                msgDiv.classList.remove("success-msg");
+            }
+
+        }
+
+        async function loginClient(event) {
+            event.preventDefault();
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+
+            const response = await fetch('/session/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const msgDiv = document.getElementById("message");
+            const result = await response.json();
+
+            if (response.ok) {
+                window.location.href = "/";
+            } else {
+                msgDiv.textContent = "Login failed: " + result.message;
+                msgDiv.classList.add("error-msg");
+            }
+        }
+
+
+    </script>
+</head>
+<body onload="validateSession()">
+
+<h1>License Plate Detection Application</h1>
+<h2>Please register or login to get access to the detection UI!</h2>
+
+<div class="menu">
+    <section id="clientRegistration">
+        <h2>Register</h2>
+        <form id="registrationForm" onsubmit="registerClient(event)">
+            <label for="registerUsername">Username:</label>
+            <input type="text" id="registerUsername" required>
+            <label for="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" required>
+            <button type="submit">Register</button>
+        </form>
+
+        <h2>Login</h2>
+        <form id="loginForm" onsubmit="loginClient(event)">
+            <label for="loginUsername">Username:</label>
+            <input type="text" id="loginUsername" required>
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" required>
+            <button type="submit">Login</button>
+        </form>
+
+
+        <p id="message"></p>
+    </section>
+</div>
+</body>
+</html>

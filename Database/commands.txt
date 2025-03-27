@@ -1,0 +1,9 @@
+1) Launch MySQL Workbench
+2) Database should be running on localhost:3306
+3) Root login:
+	Username: root
+	Password: 12345678
+   Admin user login
+	Username: admin
+	Password: admin
+

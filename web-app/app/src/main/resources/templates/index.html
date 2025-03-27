@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>License Plate Detection Application</title>
+    <link rel="stylesheet" href="/styles.css">
+
+    <script>
+
+        async function validateSession()
+        {
+            const response = await fetch('/session/validate');
+            const result = await response.json();
+
+            if(result.status === "success")
+            {
+                return;
+            }
+
+            if(!result.ok || result.status === "error")
+            {
+                window.location.href = "/login";
+            }
+        }
+
+        async function logout() {
+            await fetch('/session/logout');
+            window.location.href = "/login";
+        }
+
+        async function sendRequestToModel()
+        {
+            event.preventDefault();
+            const msgDiv = document.getElementById("message");
+            const form = document.querySelector("#licenseForm");
+            const formData = new FormData(form);
+
+
+            try {
+
+                const response = await fetch('/detections/process-license-plate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+
+                        let detection = {
+                        status: "200",
+                        licensePlate: data.licensePlate,
+                        confidence: data.confidence,
+                        detectionDate: new Date(data.detectionDate),
+                        message: data.message
+                        };
+
+
+
+                    const saveResponse = await fetch('http://localhost:8080/detections/save', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(detection)  // Sending the data in JSON format
+                    });
+
+
+
+                    if (saveResponse.ok) {
+                        const saveData = await saveResponse.json();
+
+                        if(detection.licensePlate !== -1)
+                        {
+                            const response = await fetch(`/parking/enter/${detection.licensePlate}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(detection)  // Sending the data in JSON format
+                            });
+                            const result = await response.json();
+
+                            if(result.status === "success")
+                            {
+                                msgDiv.textContent = saveData.licensePlate + " detected and parked successfully!";
+                            } else
+                            {
+                                msgDiv.textContent = saveData.licensePlate + " detected successfully, but unable to park since it's already parked in the garage!";
+                            }
+
+
+                            //Style
+                            msgDiv.classList.add("success-msg");
+                            msgDiv.classList.remove("error-msg");
+
+
+                        } else
+                        {
+                            //Style
+                            msgDiv.classList.remove("success-msg");
+                            msgDiv.classList.add("error-msg");
+                            msgDiv.textContent = "OCR was unable to extract license plate!";
+
+                        }
+
+
+
+
+                    } else {
+                        console.error("Failed to save detection:", saveResponse.statusText);
+                        msgDiv.textContent = "Error: " + saveResponse.statusText;
+
+                        //Style
+                        msgDiv.classList.add("error-msg");
+                        msgDiv.classList.remove("success-msg");
+
+
+                    }
+
+
+                } else {
+                    console.error("Failed to submit file:", response.statusText);
+                    msgDiv.textContent = "Error: " + response.statusText;
+
+                    //Style
+                    msgDiv.classList.add("error-msg");
+                    msgDiv.classList.remove("success-msg");
+
+
+                }
+
+                await listParkedCars();
+                await listDetections();
+                toggleModal();
+
+            } catch (error)
+            {
+                console.error("Error:", error);
+                alert("Error in the file sending process.");
+            }
+        }
+
+        async function listDetections() {
+            const num = document.getElementById("numOfDetections").value;
+
+            const response = await fetch(`/detections/list?numOfDetections=${num}`);
+            const detections = await response.json();
+
+            if(response.ok)
+            {
+                const resultsDiv = document.getElementById("results");
+                resultsDiv.innerHTML = "";
+                detections.forEach(detection => {
+                    const link = document.createElement("a");
+                    link.onclick = function() {
+                        //displayJobDetails(job.url);
+                    };
+                    link.textContent = `${detection.detectionDate} - ${detection.licensePlate}`;
+
+
+                    // Creating delete/remove button for each job.
+                    const deleteButton = document.createElement("span");
+                    deleteButton.classList.add("close");
+                    deleteButton.classList.add("deleteButton");
+                    deleteButton.innerHTML = "×";
+                    deleteButton.onclick = function(){
+                        //exitCar(detection.licensePlate);
+                    }
+
+                    // Creating modify button for each job.
+                    const modifyButton = document.createElement("span");
+                    modifyButton.classList.add("close");
+                    modifyButton.classList.add("deleteButton");
+                    modifyButton.innerHTML = "✎";
+                    modifyButton.onclick = function(){
+                    //    renderModifyForm(job.id);
+                    //    toggleModal();
+                    }
+
+                    const jobWrapper = document.createElement("div");
+                    jobWrapper.classList.add("job-wrapper");
+
+                    if(detection.licensePlate === "-1")
+                    {
+                        jobWrapper.classList.add("badDetection");
+                    }
+
+                    const actionsWrapper = document.createElement("div");
+                    actionsWrapper.classList.add("actions-wrapper");
+                    //actionsWrapper.appendChild(deleteButton);
+                    //actionsWrapper.appendChild(modifyButton);
+
+                    jobWrapper.appendChild(actionsWrapper);
+
+                    jobWrapper.appendChild(link);
+
+                    resultsDiv.appendChild(jobWrapper);
+                    resultsDiv.appendChild(document.createElement("br"));
+                });
+            } else
+            {
+                const msgDiv = document.getElementById("message");
+                msgDiv.textContent = "Error: " + detections.message;
+                msgDiv.classList.add("error-msg");
+                msgDiv.classList.remove("success-msg");
+            }
+
+        }
+
+        async function exitCar(licensePlate)
+        {
+
+            if(confirm('Is it sure that this car wants to exit?'))
+            {
+
+                const response = await fetch(`/parking/exit/${licensePlate}`, { method: 'DELETE' });
+
+                const msgDiv = document.getElementById("message");
+                const result = await response.json();
+
+                if (response.ok) {
+                    msgDiv.textContent = result.message;
+
+                    //Style
+                    msgDiv.classList.add("success-msg");
+                    msgDiv.classList.remove("error-msg");
+
+                    toggleModal();
+                    await listParkedCars();
+
+                } else
+                {
+                    msgDiv.textContent = "Error: " + result.message;
+
+                    //Style
+                    msgDiv.classList.add("error-msg");
+                    msgDiv.classList.remove("success-msg");
+
+                    toggleModal();
+                }
+            }
+
+
+
+        }
+
+        async function listParkedCars() {
+            const response = await fetch('/parking/list');
+
+            const cars = await response.json();
+            const parkedDiv = document.getElementById("parkedCars");
+            parkedDiv.innerHTML = "";
+
+            cars.forEach(car => {
+                const div = document.createElement("div");
+                div.classList.add("exitCarDiv")
+                div.textContent = `${car.licensePlate} - ${car.entryTime}`;
+
+                const exitButton = document.createElement("button");
+                exitButton.classList.add("exitButton")
+                exitButton.textContent = "Exit";
+                exitButton.onclick = function () { exitCar(car.licensePlate); };
+                div.appendChild(exitButton);
+                parkedDiv.appendChild(div);
+            });
+        }
+
+        function toggleModal()
+        {
+            // Toggle modal display..
+            const modal = document.getElementById("modal");
+            modal.classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById("modal");
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("modal");
+
+            document.querySelector("#job-details").innerHTML = "";
+
+            const jobForm = document.querySelector("#jobForm");
+            if(jobForm != null)
+            {
+                jobForm.remove();
+            }
+
+
+            modal.classList.toggle("show");
+        }
+
+    </script>
+
+</head>
+<body onload="validateSession(); listDetections(); listParkedCars();">
+
+<div class="navbar">
+    <div class="items">
+        <a href="/">Home</a>
+        <a href="/detections">Detections</a>
+        <a onclick="logout()">Logout</a>
+    </div>
+</div>
+
+
+<h1 th:text="${welcome_message}"></h1>
+<p th:if="${sessionEmail != null and sessionName != null}" th:text="'You are logged in as ' + ${sessionEmail} + ' (' + ${sessionName} + ')'"></p>
+
+<div class="menu">
+    <section id="main-section">
+        <h2>Submit image for detection simulation</h2>
+        <form id="licenseForm" method="POST" onsubmit="sendRequestToModel()" enctype="multipart/form-data">
+            <input type="file" name="image"/>
+            <button type="submit">Submit image</button>
+        </form>
+    </section>
+
+
+    <section id="detection-section">
+        <h2>Recent detections</h2>
+        <label for="numOfDetections">Detection to list:</label>
+        <input type="number" min="1" value="5" id="numOfDetections" name="numOfDetections">
+        <button onclick="listDetections()">List</button>
+        <div id="results"></div>
+    </section>
+    <section id="parked-section">
+        <h2>Parked Cars</h2>
+        <div id="parkedCars"></div>
+    </section>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="job-details"></div>
+        <p id="message"></p>
+    </div>
+</div>
+
+</body>
+</html>

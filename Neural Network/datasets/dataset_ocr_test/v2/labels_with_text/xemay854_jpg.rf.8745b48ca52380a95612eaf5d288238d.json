@@ -1,0 +1,1 @@
+{"license_plates": [[]], "license_plate_text": [[]], "cars": [], "car_model_predictions": {"image": {"width": 640, "height": 410}, "predictions": [{"width": 50.0, "height": 143.0, "x": 407.0, "y": 72.5, "confidence": 0.6079777479171753, "class_id": 0, "class": "person", "detection_id": "50744342-6ab2-4272-8755-68e0f09c5fba", "parent_id": "image"}]}}
