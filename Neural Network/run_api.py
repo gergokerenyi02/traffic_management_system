@@ -30,33 +30,26 @@ class ImageTransformer:
 
         # IMAGE IS RGB
         # Convert to BGR
-        # This step is only needed, because in ipython version code was written for BGR images
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         
         # STEP 1: GRAYSCLAE
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 
-        
-
-        # STEP 3: Binarize
+        # STEP 2: Binarize
         binary_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 5) # prev 15, 10
         
-        
-
-        # Ezt még lehet kiszedem teljesen, mert az Invert nem sok példánál segített
-        # Egyedül akkor, ha pl piros rendszámtáblán van szöveg
         if forceInvert:
             # Force inverting image
             binary_image = cv2.bitwise_not(binary_image)
 
 
-        # STEP 4: Crop (lightweight)
+        # STEP 3: Crop (lightweight)
         height, width = binary_image.shape
         cropped_image = binary_image[int(height * 0.05):int(height * 0.95), 0:width]
 
 
-        # STEP 5: GET REGIONS
+        # STEP 4: GET REGIONS
         labeled_image = sk_label(cropped_image)
         regions = regionprops(labeled_image)
 
@@ -65,7 +58,7 @@ class ImageTransformer:
         min_width, max_width = 3, 100
         min_height, max_height = 8, 150
 
-        # FILTER: EXTRA FIX, If width is bigger than height is probably a false positive for license plates
+        # FILTER: STEP 2: EXTRA FIX, If width is bigger than height is probably a false positive for license plates
         regions = [region for region in regions if min_width < (region.bbox[3] - region.bbox[1]) < max_width and min_height < (region.bbox[2] - region.bbox[0]) < max_height and (region.bbox[3] - region.bbox[1]) < (region.bbox[2] - region.bbox[0])]
 
         areas = [region.area for region in regions]
@@ -79,10 +72,10 @@ class ImageTransformer:
         std_width = np.std(widths)
         std_height = np.std(heights)
         
-        min_area = mean_area * 0.5  # Set min_area to be 50% of the mean area
+        min_area = mean_area * 0.5 # 50%
         
-        width_threshold_upper = mean_width + 3.5 * std_width  # Adjust based on your needs
-        height_threshold_upper = mean_height + 3.5 * std_height  # Adjust based on your needs
+        width_threshold_upper = mean_width + 3.5 * std_width
+        height_threshold_upper = mean_height + 3.5 * std_height
 
 
         # PREPARING IMAGE(S) THAT WILL BE RETURNED
@@ -91,7 +84,7 @@ class ImageTransformer:
         filtered_image = np.zeros_like(image)
         
         # BLURRED ORIGINAL IMAGE, sharp on bounding box areas
-        filtered_image2 = np.random.randint(190, 220, (640,640,3), dtype=np.uint8)  # Random shades of light gray ez nem rossz!
+        filtered_image2 = np.random.randint(190, 220, (640,640,3), dtype=np.uint8)
         filtered_image2 = cv2.GaussianBlur(filtered_image2, (3, 3), 0)
 
         
@@ -131,7 +124,7 @@ class ImageTransformer:
             filtered_image2[minr:maxr, minc:maxc] = image[minr:maxr, minc:maxc]
             # Increase contrast in the selected region
             alpha = 1.1  # Increase contrast (1.0 = original, >1.0 = more contrast)
-            beta = 0     # Brightness offset (can be adjusted if needed)
+            beta = 0
 
             filtered_image2[minr:maxr, minc:maxc] = cv2.convertScaleAbs(image[minr:maxr, minc:maxc], alpha=alpha, beta=beta)
 
@@ -149,7 +142,7 @@ class TextTransformer:
         text = re.sub(r"[^a-zA-Z0-9]", "", text)
         return text
 
-# WRAPPER CLASS FOR YOLO, OCR MODEL (Further improvements: make ImageTransformer non-static, inherit from ImageTransformer and use it in LicensePlateRecognizer)
+# WRAPPER CLASS FOR YOLO, OCR MODEL
 class LicensePlateRecognizer:
     def __init__(self, model_path):
         self.model = YOLO(model_path)
