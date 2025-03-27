@@ -24,6 +24,7 @@ out/
 
 !mvnw
 !mvnw.cmd
+!target/licensePlate-0.0.1-SNAPSHOT.jar
 
 #MACOS
 .DS_Store
