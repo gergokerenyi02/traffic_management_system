@@ -99,12 +99,17 @@
                             //Style
                             msgDiv.classList.remove("success-msg");
                             msgDiv.classList.add("error-msg");
-                            msgDiv.textContent = "OCR was unable to extract license plate!";
+
+                            if(detection.confidence === -1)
+                            {
+                                msgDiv.textContent = "No license plate detected!";
+                            } else if (detection.confidence === 0)
+                            {
+                                msgDiv.textContent = "OCR was unable to extract license plate!";
+                            }
+
 
                         }
-
-
-
 
                     } else {
                         console.error("Failed to save detection:", saveResponse.statusText);
