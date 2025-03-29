@@ -1,5 +1,6 @@
 package com.example.licensePlate.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +18,7 @@ public class Detection {
     private Long detectionId;
 
     @Column(nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Europe/Budapest")
     private LocalDateTime detectionDate;
 
     @Column(nullable = false)
