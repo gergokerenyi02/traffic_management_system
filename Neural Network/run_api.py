@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import re
 from skimage.measure import regionprops
 from skimage.measure import label as sk_label
+import pytz
 
 
 # DEBUG LOG SETTINGS
@@ -259,8 +260,11 @@ async def root():
 
 @app.post("/process-license-plate")
 async def process_license_plate(image: UploadFile = File(...)):
-    current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"{yellow}Incoming request on API Endpoint: /process-license-plate{default}")
+    budapest = pytz.timezone("Europe/Budapest")
+    current_date = datetime.datetime.now(budapest).strftime("%Y-%m-%d %H:%M:%S")
+    
+
+    print(f"{yellow}Incoming request on API Endpoint: /process-license-plate{default} at {current_date}")
     print(f"{default}--- DEBUG LOGGING BELOW ---{default}")
     try:
         received_img = BytesIO(await image.read())
