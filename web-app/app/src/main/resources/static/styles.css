@@ -20,7 +20,7 @@ body {
     align-items: center;
     min-height: 100%;
 }
-.job-wrapper a
+.detection-wrapper a
 {
     width: 100%;
 }
@@ -31,7 +31,6 @@ body {
     background-color: #1e252c;
     overflow: hidden;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
     width: 100%;
@@ -243,7 +242,7 @@ section {
     text-align: center;
 }
 
-.job-wrapper
+.detection-wrapper
 {
     display: flex;
     flex-direction: row-reverse;

@@ -157,49 +157,28 @@
                 resultsDiv.innerHTML = "";
                 detections.forEach(detection => {
                     const link = document.createElement("a");
-                    link.onclick = function() {
-                        //displayJobDetails(job.url);
-                    };
+
                     link.textContent = `${detection.detectionDate} - ${detection.licensePlate}`;
 
 
-                    // Creating delete/remove button for each job.
-                    const deleteButton = document.createElement("span");
-                    deleteButton.classList.add("close");
-                    deleteButton.classList.add("deleteButton");
-                    deleteButton.innerHTML = "×";
-                    deleteButton.onclick = function(){
-                        //exitCar(detection.licensePlate);
-                    }
 
-                    // Creating modify button for each job.
-                    const modifyButton = document.createElement("span");
-                    modifyButton.classList.add("close");
-                    modifyButton.classList.add("deleteButton");
-                    modifyButton.innerHTML = "✎";
-                    modifyButton.onclick = function(){
-                    //    renderModifyForm(job.id);
-                    //    toggleModal();
-                    }
-
-                    const jobWrapper = document.createElement("div");
-                    jobWrapper.classList.add("job-wrapper");
+                    const detectionWrapper = document.createElement("div");
+                    detectionWrapper.classList.add("detection-wrapper");
 
                     if(detection.licensePlate === "-1")
                     {
-                        jobWrapper.classList.add("badDetection");
+                        detectionWrapper.classList.add("badDetection");
                     }
 
                     const actionsWrapper = document.createElement("div");
                     actionsWrapper.classList.add("actions-wrapper");
-                    //actionsWrapper.appendChild(deleteButton);
-                    //actionsWrapper.appendChild(modifyButton);
 
-                    jobWrapper.appendChild(actionsWrapper);
 
-                    jobWrapper.appendChild(link);
+                    detectionWrapper.appendChild(actionsWrapper);
 
-                    resultsDiv.appendChild(jobWrapper);
+                    detectionWrapper.appendChild(link);
+
+                    resultsDiv.appendChild(detectionWrapper);
                     resultsDiv.appendChild(document.createElement("br"));
                 });
             } else
